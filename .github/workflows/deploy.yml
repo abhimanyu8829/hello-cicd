@@ -1,4 +1,4 @@
-﻿name: CI/CD Hello (build & push)
+name: CI/CD Hello (build & push)
 
 on:
   push:
@@ -6,6 +6,9 @@ on:
 
 env:
   DOCKERHUB_USER: abhimanyu8829
+
+permissions:
+  contents: read
 
 jobs:
   build-and-push:
@@ -29,8 +32,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
+          context: .
           push: true
           tags: |
             ${{ env.DOCKERHUB_USER }}/hello-cicd:${{ github.sha }}
             ${{ env.DOCKERHUB_USER }}/hello-cicd:latest
-
