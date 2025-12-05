@@ -1,4 +1,4 @@
-name: CI/CD Hello (build & push)
+﻿name: CI/CD Hello (build & push)
 
 on:
   push:
@@ -33,3 +33,4 @@ jobs:
           tags: |
             ${{ env.DOCKERHUB_USER }}/hello-cicd:${{ github.sha }}
             ${{ env.DOCKERHUB_USER }}/hello-cicd:latest
+
