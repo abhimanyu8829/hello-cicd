@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,31 +38,15 @@ jobs:
             ${{ env.DOCKERHUB_USER }}/hello-cicd:${{ github.sha }}
             ${{ env.DOCKERHUB_USER }}/hello-cicd:latest
 
-      - name: Trigger remote update
-        run: |
-          curl -X POST http://localhost:3001/api/update || echo "Update endpoint not reachable (optional)"
-
-const express = require("express");
-const { exec } = require("child_process");
-const app = express();
-const PORT = 3001;
-
-app.use(express.json());
-
-app.post("/api/update", (req, res) => {
-  console.log("📦 Update triggered!");
-  
-  exec("powershell.exe -File C:\\Users\\GTS89\\Desktop\\hello-cicd\\update.ps1", (error, stdout, stderr) => {
-    if (error) {
-      console.error("Error:", error);
-      res.status(500).json({ status: "error", message: error.message });
-      return;
-    }
-    console.log(stdout);
-    res.json({ status: "success", message: "Container updated!" });
-  });
-});
-
-app.listen(PORT, () => {
-  console.log(`🎯 Webhook server running on port ${PORT}`);
-});
+      - name: Deploy to remote server via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}
+          port: ${{ secrets.REMOTE_SSH_PORT }}
+          script: |
+            docker pull abhimanyu8829/hello-cicd:latest
+            docker stop hello-cicd || true
+            docker rm hello-cicd || true
+            docker run -d -p 3000:3000 --name hello-cicd abhimanyu8829/hello-cicd:latest
